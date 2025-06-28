@@ -1,7 +1,9 @@
 import graphene
 from graphene_django import DjangoObjectType
+from graphene_django.filter import DjangoFilterConnectionField
 from decimal import Decimal
 from .models import Customer, Product, Order
+from .filters import CustomerFilter, ProductFilter, OrderFilter
 from django.db import transaction
 from django.utils import timezone
 from graphql import GraphQLError
@@ -26,10 +28,14 @@ class CreateOrderInput(graphene.InputObjectType):
 class CustomerType(DjangoObjectType):
     class Meta:
         model = Customer
+        filterset_class = CustomerFilter
+        interfaces = (graphene.relay.Node,)
 
 class ProductType(DjangoObjectType):
     class Meta:
         model = Product
+        filterset_class = ProductFilter
+        interfaces = (graphene.relay.Node,)
 
 class OrderType(DjangoObjectType):
     products = graphene.List(ProductType)
@@ -37,6 +43,8 @@ class OrderType(DjangoObjectType):
 
     class Meta:
         model = Order
+        filterset_class = OrderFilter
+        interfaces = (graphene.relay.Node,)
 
     def resolve_products(self, info):
         return self.products.all()
@@ -150,18 +158,23 @@ class CreateOrder(graphene.Mutation):
 
 # ===> Root Query and Mutation <===
 class Query(graphene.ObjectType):
-    all_customers = graphene.List(CustomerType)
-    all_products = graphene.List(ProductType)
-    all_orders = graphene.List(OrderType)
+    customer = graphene.relay.Node.Field(CustomerType)
+    all_customers = DjangoFilterConnectionField(CustomerType, filterset_class=CustomerFilter)
 
-    def resolve_all_customers(root, info):
-        return Customer.objects.all()
+    product = graphene.relay.Node.Field(ProductType)
+    all_products = DjangoFilterConnectionField(ProductType)
 
-    def resolve_all_products(root, info):
-        return Product.objects.all()
+    order = graphene.relay.Node.Field(OrderType)
+    all_orders = DjangoFilterConnectionField(OrderType)
 
-    def resolve_all_orders(root, info):
-        return Order.objects.all()
+    # def resolve_all_customers(root, info):
+    #     return Customer.objects.all()
+
+    # def resolve_all_products(root, info):
+    #     return Product.objects.all()
+
+    # def resolve_all_orders(root, info):
+    #     return Order.objects.all()
 
 class Mutation(graphene.ObjectType):
     create_customer = CreateCustomer.Field()
