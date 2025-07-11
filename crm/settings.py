@@ -1,5 +1,19 @@
 from celery.schedules import crontab
 
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'crm',
+    'graphene_django',
+    'django_filters',
+    'django_crontab',
+    'django_celery_beat',
+]
+
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_BEAT_SCHEDULE = {
     'generate-crm-report': {
