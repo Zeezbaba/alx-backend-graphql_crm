@@ -31,4 +31,8 @@ def generate_crm_report():
             log_line += f"{report_data['totalRevenue']} revenue\n "
 
         with open("/tmp/crm_report_log.txt", "a") as f:
+            f.write(log_line)
+
+    except Exception as e:
+        with open("/tmp/crm_report_log.txt", "a") as f:
             f.write(f"Error at {datetime.datetime.now()}: {str(e)}\n")
