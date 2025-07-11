@@ -27,7 +27,7 @@ def log_crm_heartbeat():
 def update_low_stock():
     query = """
     mutation {
-        UpdateLowStockProducts {
+        updateLowStockProducts {
             success
             updatedProducts {
                 name
@@ -38,10 +38,14 @@ def update_low_stock():
     """
 
     try:
+        print("Sending mutation:\n", query)
         response = requests.post(
             "http://localhost:8000/graphql",
-            json={"query": query}
+            json={"query": query},
+            headers={"Content-Type": "application/json"}
         )
+        print("Response status:", response.status_code)
+        print("Response text:", response.text)
 
         data = response.json()
         log_path = "/tmp/low_stock_updates_log.txt"
@@ -51,9 +55,9 @@ def update_low_stock():
             if "errors" in data:
                 f.write(f"Error: {data['errors']}\n")
             else:
-                products = data["data"]["UpdateLowStockProducts"]["updatedProducts"]
+                products = data["data"]["updateLowStockProducts"]["updatedProducts"]
                 for p in products:
-                    f.write(f" - {p['name']}: new stock = {['stock']}\n")
+                    f.write(f" - {p['name']}: new stock = {p['stock']}\n")
     except Exception as e:
         with open("/tmp/low_stock_updates_log.txt", "a") as f:
             f.write(f"\n Error at {datetime.datetime.now()}: {str(e)}\n")
